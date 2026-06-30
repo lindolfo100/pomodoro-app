@@ -80,6 +80,7 @@ function App() {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
+      if (settingsOpen) return
       if (event.altKey || event.ctrlKey || event.metaKey) return
       if (isEditableTarget(event.target)) return
 
@@ -100,7 +101,7 @@ function App() {
 
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [pauseTimer, resetTimer, startTimer, timer.isRunning])
+  }, [pauseTimer, resetTimer, settingsOpen, startTimer, timer.isRunning])
 
   const handleToggleRunning = () => {
     if (timer.isRunning) {
