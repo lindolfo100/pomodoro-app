@@ -293,9 +293,7 @@ export function usePomodoro() {
         }
 
         if (prev.mode === 'focus' && source === 'skipped') {
-          const upcomingPomodoros = prev.completedPomodoros + 1
-          const nextMode =
-            upcomingPomodoros % settings.longBreakInterval === 0 ? 'longBreak' : 'shortBreak'
+          const nextMode: Mode = 'shortBreak'
           const remainingSeconds = durationForMode(nextMode, settings)
           return {
             ...prev,
