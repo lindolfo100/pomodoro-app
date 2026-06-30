@@ -41,10 +41,12 @@ function durationForMode(mode: Mode, settings: Settings) {
 }
 
 function createDefaultTimer(settings: Settings): TimerState {
+  const totalDuration = durationForMode('focus', settings)
   return {
     mode: 'focus',
     isRunning: false,
-    remainingSeconds: durationForMode('focus', settings),
+    remainingSeconds: totalDuration,
+    totalDuration,
     completedPomodoros: 0,
     endAt: null,
   }
@@ -86,6 +88,7 @@ function normalizeTimer(value: unknown, settings: Settings): TimerState {
   const mode = isMode(candidate?.mode) ? candidate.mode : 'focus'
   const duration = durationForMode(mode, settings)
   const remainingSeconds = clamp(Number(candidate?.remainingSeconds) || duration, 0, 60 * 180)
+  const totalDuration = clamp(Number(candidate?.totalDuration) || duration, 1, 60 * 180)
   const isRunning = Boolean(candidate?.isRunning)
   const endAt =
     isRunning && typeof candidate?.endAt === 'number'
@@ -98,6 +101,7 @@ function normalizeTimer(value: unknown, settings: Settings): TimerState {
     mode,
     isRunning,
     remainingSeconds: remainingSeconds > 0 ? remainingSeconds : duration,
+    totalDuration: totalDuration > 0 ? totalDuration : duration,
     completedPomodoros: Math.max(0, Math.floor(Number(candidate?.completedPomodoros) || 0)),
     endAt,
   }
@@ -224,6 +228,7 @@ export function usePomodoro() {
         mode,
         isRunning: false,
         remainingSeconds,
+        totalDuration: remainingSeconds,
         endAt: null,
       }))
     },
@@ -239,11 +244,14 @@ export function usePomodoro() {
     setTimer((prev) => {
       const remainingSeconds =
         prev.remainingSeconds > 0 ? prev.remainingSeconds : durationForMode(prev.mode, settings)
+      const totalDuration =
+        prev.totalDuration > 0 ? prev.totalDuration : durationForMode(prev.mode, settings)
 
       return {
         ...prev,
         isRunning: true,
         remainingSeconds,
+        totalDuration,
         endAt: Date.now() + remainingSeconds * 1000,
       }
     })
@@ -279,6 +287,7 @@ export function usePomodoro() {
             completedPomodoros,
             isRunning: settings.autoStartBreaks,
             remainingSeconds,
+            totalDuration: remainingSeconds,
             endAt: settings.autoStartBreaks ? Date.now() + remainingSeconds * 1000 : null,
           }
         }
@@ -291,6 +300,7 @@ export function usePomodoro() {
             mode: nextMode,
             isRunning: settings.autoStartBreaks,
             remainingSeconds,
+            totalDuration: remainingSeconds,
             endAt: settings.autoStartBreaks ? Date.now() + remainingSeconds * 1000 : null,
           }
         }
@@ -302,6 +312,7 @@ export function usePomodoro() {
           mode: nextMode,
           isRunning: settings.autoStartPomodoros,
           remainingSeconds,
+          totalDuration: remainingSeconds,
           endAt: settings.autoStartPomodoros ? Date.now() + remainingSeconds * 1000 : null,
         }
       })
@@ -380,6 +391,7 @@ export function usePomodoro() {
         mode,
         isRunning: false,
         remainingSeconds,
+        totalDuration: remainingSeconds,
         endAt: null,
       }))
     },
@@ -400,6 +412,7 @@ export function usePomodoro() {
         return {
           ...prevTimer,
           remainingSeconds: nextDuration,
+          totalDuration: nextDuration,
           endAt: null,
         }
       })

@@ -64,15 +64,10 @@ function App() {
 
   const theme = THEME_BY_MODE[timer.mode]
   const progress = useMemo(() => {
-    const duration =
-      timer.mode === 'focus'
-        ? settings.focusDuration * 60
-        : timer.mode === 'shortBreak'
-          ? settings.shortBreakDuration * 60
-          : settings.longBreakDuration * 60
+    const duration = timer.totalDuration
 
     return duration > 0 ? Math.max(0, Math.min(1, 1 - timer.remainingSeconds / duration)) : 0
-  }, [settings.focusDuration, settings.longBreakDuration, settings.shortBreakDuration, timer.mode, timer.remainingSeconds])
+  }, [timer.remainingSeconds, timer.totalDuration])
 
   const nextCycleLabel = useMemo(() => {
     if (timer.mode === 'focus') {

@@ -15,6 +15,7 @@ export interface TimerState {
   mode: Mode
   isRunning: boolean
   remainingSeconds: number
+  totalDuration: number
   completedPomodoros: number
   endAt: number | null
 }
