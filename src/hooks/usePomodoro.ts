@@ -338,10 +338,13 @@ export function usePomodoro() {
     }
 
     const endAt = timer.endAt
+    let hasCompleted = false
 
     const tick = () => {
       const remainingMs = endAt - Date.now()
       if (remainingMs <= 0) {
+        if (hasCompleted) return
+        hasCompleted = true
         completeSession()
         return
       }
