@@ -52,6 +52,8 @@ function createDefaultTimer(settings: Settings): TimerState {
 
 function normalizeSettings(value: unknown): Settings {
   const candidate = value as Partial<Settings> | null | undefined
+  const volumeValue = candidate?.volume ?? DEFAULT_SETTINGS.volume
+  const parsedVolume = Number(volumeValue)
 
   return {
     focusDuration: clamp(Number(candidate?.focusDuration) || DEFAULT_SETTINGS.focusDuration, 1, 180),
@@ -75,7 +77,7 @@ function normalizeSettings(value: unknown): Settings {
       candidate?.autoStartPomodoros ?? DEFAULT_SETTINGS.autoStartPomodoros,
     ),
     soundEnabled: Boolean(candidate?.soundEnabled ?? DEFAULT_SETTINGS.soundEnabled),
-    volume: clamp(Number(candidate?.volume) || DEFAULT_SETTINGS.volume, 0, 1),
+    volume: clamp(Number.isNaN(parsedVolume) ? DEFAULT_SETTINGS.volume : parsedVolume, 0, 1),
   }
 }
 
@@ -384,9 +386,26 @@ export function usePomodoro() {
     [settings],
   )
 
-  const updateSettings = useCallback((nextSettings: Settings) => {
-    setSettings(nextSettings)
-  }, [])
+  const updateSettings = useCallback(
+    (nextSettings: Settings) => {
+      setSettings(nextSettings)
+      setTimer((prevTimer) => {
+        const currentDuration = durationForMode(prevTimer.mode, settings)
+        const nextDuration = durationForMode(prevTimer.mode, nextSettings)
+
+        if (prevTimer.isRunning || prevTimer.remainingSeconds !== currentDuration) {
+          return prevTimer
+        }
+
+        return {
+          ...prevTimer,
+          remainingSeconds: nextDuration,
+          endAt: null,
+        }
+      })
+    },
+    [settings],
+  )
 
   return {
     settings,
